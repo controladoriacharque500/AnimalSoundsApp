@@ -1,4 +1,4 @@
-name: Depoy manual Compilação Android Kivy/Buildozer
+name: Depoy manual #Compilação Android Kivy/Buildozer
 
 on:
   push:
