@@ -1,0 +1,36 @@
+name: Compilação Android Kivy/Buildozer
+
+on:
+  push:
+    branches:
+      - master # Inicia a compilação sempre que você fizer push para o branch master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # Usa o Ubuntu mais recente para a compilação
+
+    steps:
+      - name: Checkout Código Fonte
+        uses: actions/checkout@v4
+
+      - name: Compilar APK com Buildozer
+        # Usa a Ação oficial do Buildozer/Kivy, que configura o Python, SDK e NDK automaticamente
+        uses: ulyng/buildozer-action@v1.1
+        id: buildozer
+        with:
+          # Versão mínima de Buildozer que ainda suporta Python 3.7+ e NDK 23b
+          # Ele será instalado automaticamente no ambiente da nuvem
+          buildozer_version: '1.4.0'
+          # Comando a ser executado
+          command: buildozer android debug
+
+      - name: Verificar se o APK foi criado
+        run: ls -l bin/
+
+      - name: Upload APK como Artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}_APK
+          # O APK gerado estará sempre na pasta 'bin'
+          path: bin/*.apk
+          retention-days: 7
