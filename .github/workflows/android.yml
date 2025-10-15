@@ -3,7 +3,7 @@ name: Compilação Android Kivy/Buildozer
 on:
   push:
     branches:
-      - master # Inicia a compilação sempre que você fizer push para o branch master
+      - principal # Inicia a compilação sempre que você fizer push para o branch master
 
 jobs:
   build:
