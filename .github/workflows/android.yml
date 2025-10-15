@@ -1,9 +1,9 @@
-name: Compilação Android Kivy/Buildozer
+name: Depoy manual Compilação Android Kivy/Buildozer
 
 on:
   push:
     branches:
-      - principal # Este é o seu branch principal
+      - master # Este é o seu branch principal
 
 jobs:
   build:
