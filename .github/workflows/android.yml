@@ -12,16 +12,16 @@ jobs:
 
     steps:
       - name: Checkout Código Fonte
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # Volta para a versão mais recente e não depreciada
 
       - name: Compilar APK com Buildozer
-        uses: kivy-actions/buildozer-action@master # MUDANÇA PARA @master
+        uses: kivy-actions/buildozer-action@master # Tentando a tag mais comum
         id: buildozer
         with:
           buildozer_args: android debug
 
       - name: Upload APK como Artefato
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4 # Volta para a versão mais recente e não depreciada
         with:
           name: ${{ github.event.repository.name }}_APK
           path: bin/*.apk
