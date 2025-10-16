@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout Código Fonte
-        uses: actions/checkout@v4 # Volta para a versão mais recente e não depreciada
+        uses: actions/checkout@v3 # Volta para a versão mais recente e não depreciada
 
       - name: Compilar APK com Buildozer
         uses: kivy-actions/buildozer-action@master # Tentando a tag mais comum
