@@ -1,9 +1,6 @@
-name: Compilação Android via Briefcase
+name: Compilação Manual do APK
 on:
   push:
-    branches:
-      - principal
-  pull_request:
     branches:
       - principal
   workflow_dispatch:
@@ -12,25 +9,50 @@ jobs:
   build-android:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Código Fonte
+      - name: Checkout do Código
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Instalar dependências do sistema (incluindo correção libtinfo5)
+        run: |
+          sudo add-apt-repository multiverse
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            git \
+            libffi-dev \
+            libsdl2-dev \
+            libsdl2-image-dev \
+            libsdl2-mixer-dev \
+            libsdl2-ttf-dev \
+            libssl-dev \
+            libtinfo5 \
+            pkg-config \
+            python3-setuptools \
+            zlib1g-dev
+
+      - name: Configurar Java (JDK 17)
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configurar Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.9'
 
-      - name: Build Android APK
-        # A linha abaixo DEVE incluir @v1 para ser encontrada pelo GitHub
-        uses: beeware/briefcase-action@v1
-        with:
-          command: build
-          platform: android
-          # O Briefcase lerá o buildozer.spec para os requisitos (kivy==2.2.1)
+      - name: Instalar Buildozer e Cython
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython
 
-      - name: Upload APK Artifact
+      - name: Compilar APK com Buildozer
+        run: |
+          # O 'yes |' aceita automaticamente as licenças do Android SDK
+          yes | buildozer -v android debug
+
+      - name: Carregar APK como Artefato
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}_APK
-          # O Briefcase gera o APK em um caminho diferente do Buildozer puro
-          path: '*/android/gradle/app/build/outputs/apk/debug/*.apk'
+          path: bin/*.apk
