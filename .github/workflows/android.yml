@@ -32,21 +32,27 @@ jobs:
           path: .buildozer
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
       # --- FIM DA CONFIGURAÇÃO DE CACHE ---
-      # --- CORREÇÃO DE ERRO DE LIBTINFO5 ---
+     # --- CORREÇÃO DE ERRO DE LIBTINFO5 (Final) ---
       - name: Install libtinfo5 fix
         run: |
-          # O Buildozer/p4a precisa desta lib antiga para funcionar
-          wget http://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.2-1_amd64.deb
-          sudo dpkg -i libtinfo5_6.2-1_amd64.deb
+          # Tenta a instalação do repositório oficial do Ubuntu que ainda mantém a lib
+          sudo apt-get update
+          sudo apt-get install -y libtinfo5 || true 
+
+          # Se a instalação acima falhar (o que ocorre em muitas máquinas virtuais), baixa e instala diretamente de um mirror estável:
+          if [ ! -f /usr/lib/x86_64-linux-gnu/libtinfo.so.5 ]; then
+              echo "libtinfo5 não encontrada, instalando via wget."
+              wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.2-1_amd64.deb -O /tmp/libtinfo5.deb
+              sudo dpkg -i /tmp/libtinfo5.deb || true
+          fi
         shell: bash
-      # Instalar dependências do sistema necessárias para o python-for-android
+
+      # --- FIM CORREÇÃO DE ERRO ---
+
       - name: Install System Dependencies
         run: |
-          # Adiciona o repositório 'multiverse' para encontrar libtinfo5
-          sudo add-apt-repository multiverse
+          # Agora o resto das dependências pode ser instalado, sem precisar da linha `libtinfo5`
           sudo apt update
-
-          # Tenta instalar todos os pacotes, incluindo libtinfo5 (que deve ser resolvido agora)
           sudo apt-get install -y \
             build-essential \
             git \
