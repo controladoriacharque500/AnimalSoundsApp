@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Compilar APK com Buildozer
-        uses: kivy-actions/buildozer-action@master # <- NOVA AÇÃO ESTÁVEL
+        uses: kivy-actions/buildozer-action@master # MUDANÇA PARA @master
         id: buildozer
         with:
           buildozer_args: android debug
