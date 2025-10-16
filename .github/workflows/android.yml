@@ -1,4 +1,4 @@
-name: Compilação Android Kivy/Buildozer
+name: Compilação Android via Briefcase
 on:
   push:
     branches:
@@ -6,125 +6,32 @@ on:
   pull_request:
     branches:
       - principal
-  workflow_dispatch: # Permite o disparo manual
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-android:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Código Fonte
+        uses: actions/checkout@v4
 
-      # --- CONFIGURAÇÃO DE CACHE (Como no exemplo) ---
-      - name: Get Date
-        id: get-date
-        run: |
-          echo "date=$(/bin/date -u "+%Y%m%d")" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - name: Cache Buildozer global directory
-        uses: actions/cache@v3
-        with:
-          path: .buildozer_global
-          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
-
-      - uses: actions/cache@v3
-        with:
-          path: .buildozer
-          key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
-      # --- FIM DA CONFIGURAÇÃO DE CACHE ---
-     # --- CORREÇÃO DE ERRO DE LIBTINFO5 (Final) ---
-      - name: Install libtinfo5 fix
-        run: |
-          # Tenta a instalação do repositório oficial do Ubuntu que ainda mantém a lib
-          sudo apt-get update
-          sudo apt-get install -y libtinfo5 || true 
-
-          # Se a instalação acima falhar (o que ocorre em muitas máquinas virtuais), baixa e instala diretamente de um mirror estável:
-          if [ ! -f /usr/lib/x86_64-linux-gnu/libtinfo.so.5 ]; then
-              echo "libtinfo5 não encontrada, instalando via wget."
-              wget http://security.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.2-1_amd64.deb -O /tmp/libtinfo5.deb
-              sudo dpkg -i /tmp/libtinfo5.deb || true
-          fi
-        shell: bash
-
-      # --- FIM CORREÇÃO DE ERRO ---
-
-      - name: Install System Dependencies
-        run: |
-          # Agora o resto das dependências pode ser instalado, sem precisar da linha `libtinfo5`
-          sudo apt update
-          sudo apt-get install -y \
-            build-essential \
-            git \
-            ffmpeg \
-            libsdl2-dev \
-            libsdl2-image-dev \
-            libsdl2-mixer-dev \
-            libsdl2-ttf-dev \
-            libportmidi-dev \
-            libswscale-dev \
-            libavformat-dev \
-            libavcodec-dev \
-            libunwind-dev \
-            zlib1g-dev \
-            libsqlite3-dev \
-            sqlite3 \
-            bzip2 \
-            libbz2-dev \
-            zlib1g-dev \
-            openssl \
-            libgdbm-dev \
-            libgdbm-compat-dev \
-            liblzma-dev \
-            libreadline-dev \
-            uuid-dev \
-            libgstreamer1.0 \
-            gstreamer1.0-plugins-base \
-            gstreamer1.0-plugins-good \
-            zip \
-            unzip \
-            autoconf \
-            libtool \
-            pkg-config \
-            libncurses5-dev \
-            libncursesw5-dev \
-            libtinfo5 \
-            cmake \
-            libffi-dev \
-            libssl-dev \
-            automake
-        shell: bash
-
-      # Set up Java 17
-      - name: Setup Java 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      # Set up Python
-      - name: Set up Python
+      # Instala Python
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9' # Versão Python estável para Buildozer
+          python-version: '3.11' # Versão moderna e suportada pelo Briefcase
 
-      # Install pip dependencies
-      - name: Install pip dependencies
-        run: |
-          pip install --upgrade pip
-          pip install buildozer cython # Removemos a versão fixa (0.29.33)
-        shell: bash
+      # --- Substitui TODAS as instalações de dependência manual (libtinfo5, etc.) ---
+      - name: Build Android APK
+        uses: beeware/briefcase-action@v1 # Ação que usa o Buildozer internamente
+        with:
+          command: build
+          platform: android
+          target: 'arm64-v8a' # Arquitetura moderna
 
-      # Build with Buildozer
-      - name: Build with Buildozer
-        id: buildozer
-        run: |
-          yes | buildozer -v android debug # O 'yes |' é crucial para aceitar licenças
-        shell: bash
-        
-      # Upload artifacts
-      - name: Upload APK artifact
+      # O Briefcase salva o artefato na pasta 'android/gradle/...'
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}_APK
-          path: bin/*.apk
+          path: '*/android/gradle/app/build/outputs/apk/debug/*.apk' # Caminho padrão do Briefcase/Buildozer
