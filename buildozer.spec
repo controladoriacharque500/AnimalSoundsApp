@@ -8,7 +8,7 @@ version = 0.1
 orientation = portrait
 
 # Requisitos para a compilação (simples e estável)
-requirements = python3,kivy,sdl2
+requirements = python3,kivy==2.2.1,sdl2,openssl
 
 # Configurações do Android
 fullscreen = 0
