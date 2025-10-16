@@ -15,23 +15,22 @@ jobs:
       - name: Checkout Código Fonte
         uses: actions/checkout@v4
 
-      # Instala Python
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11' # Versão moderna e suportada pelo Briefcase
+          python-version: '3.11'
 
-      # --- Substitui TODAS as instalações de dependência manual (libtinfo5, etc.) ---
       - name: Build Android APK
-        uses: beeware/briefcase-action@v1 # Ação que usa o Buildozer internamente
+        # A linha abaixo DEVE incluir @v1 para ser encontrada pelo GitHub
+        uses: beeware/briefcase-action@v1
         with:
           command: build
           platform: android
-          target: 'arm64-v8a' # Arquitetura moderna
+          # O Briefcase lerá o buildozer.spec para os requisitos (kivy==2.2.1)
 
-      # O Briefcase salva o artefato na pasta 'android/gradle/...'
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}_APK
-          path: '*/android/gradle/app/build/outputs/apk/debug/*.apk' # Caminho padrão do Briefcase/Buildozer
+          # O Briefcase gera o APK em um caminho diferente do Buildozer puro
+          path: '*/android/gradle/app/build/outputs/apk/debug/*.apk'
