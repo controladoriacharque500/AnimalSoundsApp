@@ -15,10 +15,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Compilar APK com Buildozer
-        uses: ulyng/buildozer-action@v1.1
+        uses: kivy-actions/buildozer-action@v1 # <- NOVA AÇÃO ESTÁVEL
         id: buildozer
         with:
-          buildozer_version: '1.4.0'
           command: buildozer android debug
 
       - name: Upload APK como Artefato
