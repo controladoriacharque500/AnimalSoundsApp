@@ -18,7 +18,7 @@ jobs:
       - name: Get Date
         id: get-date
         run: |
-          echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
+          echo "date=$(/bin/date -u "+%Y%m%d")" >> $GITHUB_OUTPUT
         shell: bash
 
       - name: Cache Buildozer global directory
@@ -90,13 +90,13 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8' # Versão Python estável para Buildozer
+          python-version: '3.9' # Versão Python estável para Buildozer
 
       # Install pip dependencies
       - name: Install pip dependencies
         run: |
           pip install --upgrade pip
-          pip install buildozer cython==0.29.33 # Cython versão estável
+          pip install buildozer cython # Removemos a versão fixa (0.29.33)
         shell: bash
 
       # Build with Buildozer
