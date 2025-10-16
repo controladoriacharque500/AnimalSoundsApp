@@ -42,8 +42,11 @@ jobs:
       # Instalar dependências do sistema necessárias para o python-for-android
       - name: Install System Dependencies
         run: |
-          sudo add-apt-repository universe
+          # Adiciona o repositório 'multiverse' para encontrar libtinfo5
+          sudo add-apt-repository multiverse
           sudo apt update
+
+          # Tenta instalar todos os pacotes, incluindo libtinfo5 (que deve ser resolvido agora)
           sudo apt-get install -y \
             build-essential \
             git \
