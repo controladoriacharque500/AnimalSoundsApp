@@ -18,7 +18,7 @@ jobs:
         uses: kivy-actions/buildozer-action@v1 # <- NOVA AÇÃO ESTÁVEL
         id: buildozer
         with:
-          command: buildozer android debug
+          buildozer_args: android debug
 
       - name: Upload APK como Artefato
         uses: actions/upload-artifact@v4
