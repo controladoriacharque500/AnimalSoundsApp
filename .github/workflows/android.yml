@@ -32,7 +32,13 @@ jobs:
           path: .buildozer
           key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
       # --- FIM DA CONFIGURAÇÃO DE CACHE ---
-
+      # --- CORREÇÃO DE ERRO DE LIBTINFO5 ---
+      - name: Install libtinfo5 fix
+        run: |
+          # O Buildozer/p4a precisa desta lib antiga para funcionar
+          wget http://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.2-1_amd64.deb
+          sudo dpkg -i libtinfo5_6.2-1_amd64.deb
+        shell: bash
       # Instalar dependências do sistema necessárias para o python-for-android
       - name: Install System Dependencies
         run: |
