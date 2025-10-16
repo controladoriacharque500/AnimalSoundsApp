@@ -1,28 +1,114 @@
-# Commit para forçar a compilação do Actions 
 name: Compilação Android Kivy/Buildozer
-
 on:
   push:
     branches:
-      - principal # Correção do branch
-  workflow_dispatch: # Adicione esta linha para criar o botão 'Run workflow'
+      - principal
+  pull_request:
+    branches:
+      - principal
+  workflow_dispatch: # Permite o disparo manual
+
 jobs:
   build:
-    runs-on: ubuntu-latest # Deve ser 'runs-on', não 'continua'
-
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout Código Fonte
-        uses: actions/checkout@v3 # Volta para a versão mais recente e não depreciada
+      - uses: actions/checkout@v4
 
-      - name: Compilar APK com Buildozer
-        uses: kivy-actions/buildozer-action@master # Tentando a tag mais comum
-        id: buildozer
+      # --- CONFIGURAÇÃO DE CACHE (Como no exemplo) ---
+      - name: Get Date
+        id: get-date
+        run: |
+          echo "::set-output name=date::$(/bin/date -u "+%Y%m%d")"
+        shell: bash
+
+      - name: Cache Buildozer global directory
+        uses: actions/cache@v3
         with:
-          buildozer_args: android debug
+          path: .buildozer_global
+          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
 
-      - name: Upload APK como Artefato
-        uses: actions/upload-artifact@v4 # Volta para a versão mais recente e não depreciada
+      - uses: actions/cache@v3
+        with:
+          path: .buildozer
+          key: ${{ runner.os }}-${{ steps.get-date.outputs.date }}-${{ hashFiles('buildozer.spec') }}
+      # --- FIM DA CONFIGURAÇÃO DE CACHE ---
+
+      # Instalar dependências do sistema necessárias para o python-for-android
+      - name: Install System Dependencies
+        run: |
+          sudo apt update
+          sudo apt-get install -y \
+            build-essential \
+            git \
+            ffmpeg \
+            libsdl2-dev \
+            libsdl2-image-dev \
+            libsdl2-mixer-dev \
+            libsdl2-ttf-dev \
+            libportmidi-dev \
+            libswscale-dev \
+            libavformat-dev \
+            libavcodec-dev \
+            libunwind-dev \
+            zlib1g-dev \
+            libsqlite3-dev \
+            sqlite3 \
+            bzip2 \
+            libbz2-dev \
+            zlib1g-dev \
+            openssl \
+            libgdbm-dev \
+            libgdbm-compat-dev \
+            liblzma-dev \
+            libreadline-dev \
+            uuid-dev \
+            libgstreamer1.0 \
+            gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good \
+            zip \
+            unzip \
+            autoconf \
+            libtool \
+            pkg-config \
+            libncurses5-dev \
+            libncursesw5-dev \
+            libtinfo5 \
+            cmake \
+            libffi-dev \
+            libssl-dev \
+            automake
+        shell: bash
+
+      # Set up Java 17
+      - name: Setup Java 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8' # Versão Python estável para Buildozer
+
+      # Install pip dependencies
+      - name: Install pip dependencies
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.33 # Cython versão estável
+        shell: bash
+
+      # Build with Buildozer
+      - name: Build with Buildozer
+        id: buildozer
+        run: |
+          yes | buildozer -v android debug # O 'yes |' é crucial para aceitar licenças
+        shell: bash
+        
+      # Upload artifacts
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}_APK
           path: bin/*.apk
-          retention-days: 7
