@@ -1,0 +1,28 @@
+name: Compilação Android Kivy/Buildozer
+
+on:
+  push:
+    branches:
+      - principal # Correção do branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # Deve ser 'runs-on', não 'continua'
+
+    steps:
+      - name: Checkout Código Fonte
+        uses: actions/checkout@v4
+
+      - name: Compilar APK com Buildozer
+        uses: ulyng/buildozer-action@v1.1
+        id: buildozer
+        with:
+          buildozer_version: '1.4.0'
+          command: buildozer android debug
+
+      - name: Upload APK como Artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}_APK
+          path: bin/*.apk
+          retention-days: 7
