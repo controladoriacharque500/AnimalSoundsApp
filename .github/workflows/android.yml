@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - principal # Correção do branch
-
+  workflow_dispatch: # Adicione esta linha para criar o botão 'Run workflow'
 jobs:
   build:
     runs-on: ubuntu-latest # Deve ser 'runs-on', não 'continua'
