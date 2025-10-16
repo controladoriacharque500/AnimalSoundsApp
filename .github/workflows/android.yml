@@ -1,4 +1,4 @@
-name: Compilação Manual do APK
+name: Compilação Manual do APK (Final)
 on:
   push:
     branches:
@@ -12,9 +12,17 @@ jobs:
       - name: Checkout do Código
         uses: actions/checkout@v4
 
-      - name: Instalar dependências do sistema (incluindo correção libtinfo5)
+      # Passo 1: Instala o libtinfo5 manualmente
+      - name: Instalar libtinfo5 manualmente
         run: |
-          sudo add-apt-repository multiverse
+          # Baixa o pacote de um mirror conhecido e estável do Ubuntu
+          wget http://archive.ubuntu.com/ubuntu/pool/universe/n/ncurses/libtinfo5_6.2-1ubuntu1_amd64.deb
+          # Instala o pacote .deb baixado
+          sudo dpkg -i libtinfo5_6.2-1ubuntu1_amd64.deb
+
+      # Passo 2: Instala o restante das dependências do sistema
+      - name: Instalar outras dependências do sistema
+        run: |
           sudo apt-get update
           sudo apt-get install -y \
             build-essential \
@@ -25,7 +33,6 @@ jobs:
             libsdl2-mixer-dev \
             libsdl2-ttf-dev \
             libssl-dev \
-            libtinfo5 \
             pkg-config \
             python3-setuptools \
             zlib1g-dev
@@ -48,7 +55,6 @@ jobs:
 
       - name: Compilar APK com Buildozer
         run: |
-          # O 'yes |' aceita automaticamente as licenças do Android SDK
           yes | buildozer -v android debug
 
       - name: Carregar APK como Artefato
