@@ -1,3 +1,4 @@
+# Commit para forçar a compilação do Actions
 name: Compilação Android Kivy/Buildozer
 
 on:
